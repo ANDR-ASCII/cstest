@@ -1,6 +1,7 @@
+#include "application.h"
+
 int main(int argc, char** argv)
 {
-
-	std::cin.get();
-	return 0;
+	Test::Application app(argc, argv);
+	return app.exec();
 }
