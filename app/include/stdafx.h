@@ -18,10 +18,6 @@
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QMetaType>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkProxy>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPainter>
@@ -31,12 +27,14 @@
 #include <QQueue>
 #include <QDebug>
 #include <QStyledItemDelegate>
-#include <QProcess>
 #include <QDateTime>
 #include <QLineEdit>
 #include <QScrollBar>
 #include <QScreen>
 #include <QItemSelectionModel>
+#include <QFileDialog>
+#include <QStandardItemModel>
+
 //
 // C/C++
 //
@@ -66,3 +64,23 @@
 #include <limits>
 #include <fstream>
 #include <iostream>
+#include <random>
+
+#include <windows.h>
+
+#include "assert_impl.h"
+
+#define ASSERT(condition) if((condition) == false) \
+	doAssert(__FILE__, __LINE__, __FUNCTION__, #condition);
+
+#ifdef NDEBUG
+
+#define DEBUG_ASSERT(condition)
+#define VERIFY(Connection) Connection
+
+#else
+
+#define DEBUG_ASSERT(condition) ASSERT(condition)
+#define VERIFY(Connection) ASSERT(Connection)
+
+#endif

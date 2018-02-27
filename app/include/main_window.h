@@ -11,6 +11,14 @@ class MainWindow : public QMainWindow, protected Ui_MainWindow
 
 public:
 	MainWindow(QWidget* parent = nullptr);
+
+private slots:
+	void onGenerateRowsButtonClicked();
+	void onSaveToFileButtonClicked();
+	void onLoadFromFileButtonClicked();
+
+private:
+	QStandardItemModel* m_itemModel;
 };
 
 }
