@@ -11,6 +11,8 @@ struct RowData
 	bool boolValue;
 };
 
+Q_DECLARE_METATYPE(RowData)
+
 struct GenerateRowTask final
 {
 	RowData operator()() const;
