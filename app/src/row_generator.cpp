@@ -30,10 +30,15 @@ void RowGenerator::generateRows(std::size_t count)
 		m_queue.push(std::move(row));
 	};
 
-	for (std::size_t i = 0; i < count; ++i)
+	const auto distributeTasks = [&]
 	{
-		m_threadPool.pushDetachedTask(task);
-	}
+		for (std::size_t i = 0; i < count; ++i)
+		{
+			m_threadPool.pushDetachedTask(task);
+		}
+	};
+
+	std::async(std::launch::async, distributeTasks);
 }
 
 bool RowGenerator::extractRowData(QList<QStandardItem*>& row)

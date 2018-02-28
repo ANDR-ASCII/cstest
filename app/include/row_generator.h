@@ -13,8 +13,11 @@ public:
 	bool extractRowData(QList<QStandardItem*>& row);
 
 private:
-	ThreadPool m_threadPool;
+	//
+	// Order of members is important!
+	//
 	ThreadSafeQueue<QList<QStandardItem*>> m_queue;
+	ThreadPool m_threadPool;
 };
 
 }

@@ -105,12 +105,16 @@ public:
 	~ThreadPool()
 	{
 		m_done = true;
+
+		m_wakeupThreadCondition.notify_all();
 	}
 
 	template <typename F>
 	void pushDetachedTask(F&& f)
 	{
 		m_queue.push(TaskWrapper(std::move(f)));
+
+		m_wakeupThreadCondition.notify_all();
 	}
 
 	template <typename F>
@@ -122,6 +126,8 @@ public:
 		std::future<ReturnType> future(packagedTask.get_future());
 
 		m_queue.push(TaskWrapper(std::move(packagedTask)));
+
+		m_wakeupThreadCondition.notify_all();
 
 		return future;
 	}
@@ -145,6 +151,16 @@ private:
 	{
 		while (!m_done)
 		{
+			{
+				std::unique_lock<std::mutex> locker(m_mutex);
+				m_wakeupThreadCondition.wait(locker, [this] { return !m_queue.empty() || m_done; });
+
+				if (m_done)
+				{
+					return;
+				}
+			}
+
 			executePendingTask();
 		}
 	}
@@ -152,6 +168,8 @@ private:
 private:
 	std::atomic_bool m_done;
 	ThreadSafeQueue<TaskWrapper> m_queue;
+	mutable std::mutex m_mutex;
+	std::condition_variable m_wakeupThreadCondition;
 	std::vector<std::thread> m_threads;
 	Joiner m_joiner;
 };

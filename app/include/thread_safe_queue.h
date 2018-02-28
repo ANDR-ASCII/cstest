@@ -37,6 +37,13 @@ public:
 		return true;
 	}
 
+	bool empty()
+	{
+		std::lock_guard<std::mutex> locker(m_mutex);
+
+		return m_queue.empty();
+	}
+
 private:
 	mutable std::mutex m_mutex;
 	std::queue<T> m_queue;
