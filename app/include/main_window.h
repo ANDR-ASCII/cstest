@@ -5,8 +5,7 @@
 namespace Test
 {
 
-class RowDataProvider;
-struct RowData;
+class RowProvider;
 
 class MainWindow : public QMainWindow, protected Ui_MainWindow
 {
@@ -19,11 +18,11 @@ private slots:
 	void onGenerateRowsButtonClicked();
 	void onSaveToFileButtonClicked();
 	void onLoadFromFileButtonClicked();
-	void onRowDataReady(const RowData& rowData);
+	void onRowDataReady(const QList<QStandardItem*>& row);
 
 private:
 	QStandardItemModel* m_itemModel;
-	RowDataProvider* m_rowDataProvider;
+	RowProvider* m_rowProvider;
 };
 
 }

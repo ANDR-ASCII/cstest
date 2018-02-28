@@ -117,10 +117,7 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="0" rowspan="3">
-     <widget class="QTableView" name="tableView"/>
-    </item>
-    <item row="3" column="0">
+    <item row="3" column="1">
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -132,6 +129,9 @@
        </size>
       </property>
      </spacer>
+    </item>
+    <item row="0" column="0" rowspan="4">
+     <widget class="QTableView" name="tableView"/>
     </item>
    </layout>
   </widget>

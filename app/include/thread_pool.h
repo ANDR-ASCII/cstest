@@ -83,32 +83,6 @@ private:
 	};
 
 public:
-	static ThreadPool* instance()
-	{
-		static std::unique_ptr<ThreadPool> s_instance = std::make_unique<ThreadPool>();
-
-		return s_instance.get();
-	}
-
-	~ThreadPool()
-	{
-		m_done = true;
-	}
-
-	template <typename F>
-	std::future<typename std::result_of<F()>::type> pushTask(F&& f)
-	{
-		using ReturnType = typename std::result_of<F()>::type;
-
-		std::packaged_task<ReturnType()> packagedTask(f);
-		std::future<ReturnType> future(packagedTask.get_future());
-
-		m_queue.push(TaskWrapper(std::move(packagedTask)));
-
-		return future;
-	}
-
-private:
 	ThreadPool()
 		: m_done(false)
 		, m_joiner(m_threads)
@@ -127,20 +101,51 @@ private:
 		}
 	}
 
+
+	~ThreadPool()
+	{
+		m_done = true;
+	}
+
+	template <typename F>
+	void pushDetachedTask(F&& f)
+	{
+		m_queue.push(TaskWrapper(std::move(f)));
+	}
+
+	template <typename F>
+	std::future<typename std::result_of<F()>::type> pushTask(F&& f)
+	{
+		using ReturnType = typename std::result_of<F()>::type;
+
+		std::packaged_task<ReturnType()> packagedTask(f);
+		std::future<ReturnType> future(packagedTask.get_future());
+
+		m_queue.push(TaskWrapper(std::move(packagedTask)));
+
+		return future;
+	}
+
+	void executePendingTask()
+	{
+		TaskWrapper task;
+
+		if (m_queue.pop(task))
+		{
+			task();
+		}
+		else
+		{
+			std::this_thread::yield();
+		}
+	}
+
+private:
 	void workerThreadEntryPoint()
 	{
 		while (!m_done)
 		{
-			TaskWrapper task;
-
-			if (!m_queue.pop(task))
-			{
-				std::this_thread::yield();
-
-				continue;
-			}
-
-			task();
+			executePendingTask();
 		}
 	}
 
