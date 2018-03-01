@@ -20,6 +20,12 @@ public:
 		return distribution(generator);
 	}
 
+	template <typename T, std::size_t N>
+	constexpr static std::size_t arrayLength(T(&arr)[N])
+	{
+		return N;
+	}
+
 	static bool randomBoolValue();
 };
 

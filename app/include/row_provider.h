@@ -15,7 +15,7 @@ public:
 	void generateRows(std::size_t count);
 
 signals:
-	void rowReady(const QList<QStandardItem*>& row);
+	void rowReady(const RowData& row);
 
 protected:
 	virtual void timerEvent(QTimerEvent* event) override;

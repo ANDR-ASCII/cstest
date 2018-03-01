@@ -39,7 +39,7 @@ void RowProvider::timerEvent(QTimerEvent* event)
 
 void RowProvider::checkRowsReady()
 {
-	QList<QStandardItem*> row;
+	RowData row;
 
 	if (m_rowGenerator->extractRowData(row))
 	{

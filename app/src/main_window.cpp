@@ -57,9 +57,16 @@ void MainWindow::onLoadFromFileButtonClicked()
 	}
 }
 
-void MainWindow::onRowDataReady(const QList<QStandardItem*>& row)
+void MainWindow::onRowDataReady(const RowData& row)
 {
-	m_itemModel->appendRow(row);
+	QList<QStandardItem*> rowItems;
+
+	rowItems.push_back(new QStandardItem(QString(row.string)));
+	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.number)));
+	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.floatingPointNumber)));
+	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.boolValue ? "true" : "false")));
+
+	m_itemModel->appendRow(rowItems);
 }
 
 }
