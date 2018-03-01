@@ -40,4 +40,11 @@ bool RowGenerator::extractRowData(RowData& row)
 	return m_queue.pop(row);
 }
 
+void RowGenerator::stopGenerating()
+{
+	m_threadPool.clearTasks();
+
+	m_queue.clear();
+}
+
 }

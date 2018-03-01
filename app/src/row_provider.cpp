@@ -15,6 +15,7 @@ RowProvider::RowProvider(QObject* parent)
 	, m_rowGenerator(std::make_unique<RowGenerator>())
 	, m_generatedRowsCounter(0)
 	, m_dispatchTimerId(0)
+	, m_isGeneratingProcess(false)
 {
 }
 
@@ -28,6 +29,22 @@ void RowProvider::generateRows(std::size_t count)
 	ASSERT(m_dispatchTimerId);
 
 	m_rowGenerator->generateRows(count);
+
+	m_isGeneratingProcess = true;
+}
+
+void RowProvider::stopGenerating()
+{
+	if (m_dispatchTimerId)
+	{
+		m_rowGenerator->stopGenerating();
+
+		killTimer(m_dispatchTimerId);
+
+		m_isGeneratingProcess = false;
+
+		emit generatingDone();
+	}
 }
 
 void RowProvider::timerEvent(QTimerEvent* event)
@@ -52,7 +69,16 @@ void RowProvider::checkRowsReady()
 	{
 		ASSERT(m_dispatchTimerId);
 		killTimer(m_dispatchTimerId);
+
+		m_isGeneratingProcess = false;
+
+		emit generatingDone();
 	}
+}
+
+bool RowProvider::isGeneratingProcess() const noexcept
+{
+	return m_isGeneratingProcess;
 }
 
 }

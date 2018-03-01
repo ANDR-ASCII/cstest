@@ -15,12 +15,21 @@ MainWindow::MainWindow(QWidget* parent)
 	VERIFY(connect(saveToFileButton, &QPushButton::clicked, this, &MainWindow::onSaveToFileButtonClicked));
 	VERIFY(connect(loadFromFileButton, &QPushButton::clicked, this, &MainWindow::onLoadFromFileButtonClicked));
 	VERIFY(connect(m_rowProvider, &RowProvider::rowReady, this, &MainWindow::onRowDataReady));
+	VERIFY(connect(m_rowProvider, &RowProvider::generatingDone, this, &MainWindow::onGeneratingDone));
 
 	tableView->setModel(m_itemModel);
 }
 
 void MainWindow::onGenerateRowsButtonClicked()
 {
+	if (m_rowProvider->isGeneratingProcess())
+	{
+		m_rowProvider->stopGenerating();
+		return;
+	}
+
+	m_itemModel->clear();
+
 	const int rowsCount = rowsCountSpinBox->value();
 
 	if (rowsCount <= 0)
@@ -35,6 +44,8 @@ void MainWindow::onGenerateRowsButtonClicked()
 	}
 
 	m_rowProvider->generateRows(rowsCount);
+
+	generateRowsButton->setText(tr("Cancel Generation"));
 }
 
 void MainWindow::onSaveToFileButtonClicked()
@@ -57,13 +68,18 @@ void MainWindow::onLoadFromFileButtonClicked()
 	}
 }
 
+void MainWindow::onGeneratingDone()
+{
+	generateRowsButton->setText(tr("Generate"));
+}
+
 void MainWindow::onRowDataReady(const RowData& row)
 {
 	QList<QStandardItem*> rowItems;
 
 	rowItems.push_back(new QStandardItem(QString(row.string)));
 	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.number)));
-	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.floatingPointNumber)));
+	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.floatingPointNumber, 0, 'g', 3)));
 	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.boolValue ? "true" : "false")));
 
 	m_itemModel->appendRow(rowItems);

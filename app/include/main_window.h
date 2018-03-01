@@ -19,6 +19,7 @@ private slots:
 	void onGenerateRowsButtonClicked();
 	void onSaveToFileButtonClicked();
 	void onLoadFromFileButtonClicked();
+	void onGeneratingDone();
 	void onRowDataReady(const RowData& row);
 
 private:

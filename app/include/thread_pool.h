@@ -89,7 +89,7 @@ public:
 	{
 		try
 		{
-			for (unsigned i = 0; i < std::thread::hardware_concurrency(); ++i)
+			for (unsigned i = 0; i < 1/*std::thread::hardware_concurrency()*/; ++i)
 			{
 				m_threads.emplace_back(&ThreadPool::workerThreadEntryPoint, this);
 			}
@@ -101,6 +101,10 @@ public:
 		}
 	}
 
+	void clearTasks()
+	{
+		m_queue.clear();
+	}
 
 	~ThreadPool()
 	{

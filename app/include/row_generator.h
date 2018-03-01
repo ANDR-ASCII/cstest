@@ -8,7 +8,7 @@ namespace Test
 
 struct RowData
 {
-	char string[6];
+	char string[3];
 	int number;
 	double floatingPointNumber;
 	bool boolValue;
@@ -19,6 +19,7 @@ class RowGenerator final
 public:
 	void generateRows(std::size_t count);
 	bool extractRowData(RowData& row);
+	void stopGenerating();
 
 private:
 	//
