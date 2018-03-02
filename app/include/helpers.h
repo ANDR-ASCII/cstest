@@ -27,6 +27,8 @@ public:
 	}
 
 	static bool randomBoolValue();
+
+	static constexpr int s_minimumRecommendedTimerResolution = 21;
 };
 
 }

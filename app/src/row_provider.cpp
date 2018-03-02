@@ -1,11 +1,5 @@
 #include "row_provider.h"
-
-namespace
-{
-
-constexpr int c_minimumRecommendedTimerResolution = 21;
-
-}
+#include "helpers.h"
 
 namespace Test
 {
@@ -25,7 +19,7 @@ void RowProvider::generateRows(std::size_t count)
 
 	m_generatedRowsCounter = count;
 
-	m_dispatchTimerId = startTimer(c_minimumRecommendedTimerResolution);
+	m_dispatchTimerId = startTimer(Helpers::s_minimumRecommendedTimerResolution);
 	ASSERT(m_dispatchTimerId);
 
 	m_rowGenerator->generateRows(count);

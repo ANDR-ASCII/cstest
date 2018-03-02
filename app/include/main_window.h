@@ -7,6 +7,7 @@ namespace Test
 
 struct RowData;
 class RowProvider;
+class RowsCollection;
 
 class MainWindow : public QMainWindow, protected Ui_MainWindow
 {
@@ -21,10 +22,13 @@ private slots:
 	void onLoadFromFileButtonClicked();
 	void onGeneratingDone();
 	void onRowDataReady(const RowData& row);
+	void checkSaveLoadOperationReady();
 
 private:
-	QStandardItemModel* m_itemModel;
 	RowProvider* m_rowProvider;
+	std::shared_ptr<RowsCollection> m_rowsCollection;
+	QTimer* m_saveLoadFileTimer;
+	std::future<void> m_future;
 };
 
 }

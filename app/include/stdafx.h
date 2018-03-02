@@ -34,6 +34,9 @@
 #include <QItemSelectionModel>
 #include <QFileDialog>
 #include <QStandardItemModel>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
+#include <QReadWriteLock>
 
 //
 // C/C++
@@ -65,6 +68,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <array>
 
 #include <windows.h>
 

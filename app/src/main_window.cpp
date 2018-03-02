@@ -1,13 +1,18 @@
 #include "main_window.h"
 #include "row_provider.h"
+#include "serialization_task.h"
+#include "helpers.h"
+#include "rows_collection.h"
+#include "custom_table_model.h"
 
 namespace Test
 {
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
-	, m_itemModel(new QStandardItemModel(this))
 	, m_rowProvider(new RowProvider(this))
+	, m_rowsCollection(new RowsCollection(this))
+	, m_saveLoadFileTimer(new QTimer(this))
 {
 	setupUi(this);
 
@@ -16,8 +21,10 @@ MainWindow::MainWindow(QWidget* parent)
 	VERIFY(connect(loadFromFileButton, &QPushButton::clicked, this, &MainWindow::onLoadFromFileButtonClicked));
 	VERIFY(connect(m_rowProvider, &RowProvider::rowReady, this, &MainWindow::onRowDataReady));
 	VERIFY(connect(m_rowProvider, &RowProvider::generatingDone, this, &MainWindow::onGeneratingDone));
+	VERIFY(connect(m_saveLoadFileTimer, &QTimer::timeout, this, &MainWindow::checkSaveLoadOperationReady));
 
-	tableView->setModel(m_itemModel);
+	tableView->setModel(new CustomTableModel(m_rowsCollection));
+	m_saveLoadFileTimer->setInterval(Helpers::s_minimumRecommendedTimerResolution);
 }
 
 void MainWindow::onGenerateRowsButtonClicked()
@@ -28,7 +35,7 @@ void MainWindow::onGenerateRowsButtonClicked()
 		return;
 	}
 
-	m_itemModel->clear();
+	m_rowsCollection->clear();
 
 	const int rowsCount = rowsCountSpinBox->value();
 
@@ -45,44 +52,80 @@ void MainWindow::onGenerateRowsButtonClicked()
 
 	m_rowProvider->generateRows(rowsCount);
 
-	generateRowsButton->setText(tr("Cancel Generation"));
+	saveToFileButton->setEnabled(false);
+	loadFromFileButton->setEnabled(false);
+
+	generateRowsButton->setText(tr("Stop Generation"));
 }
 
 void MainWindow::onSaveToFileButtonClicked()
 {
+	ASSERT(!m_rowProvider->isGeneratingProcess());
+
 	const QString path = QFileDialog::getSaveFileName(this, tr("Save File"), qApp->applicationDirPath(), QString("*.xml"));
 
 	if (path.isEmpty())
 	{
 		return;
 	}
+
+	tableView->setEnabled(false);
+
+	m_future = std::async(std::launch::async, SerializationTask(m_rowsCollection, path));
+
+	m_saveLoadFileTimer->start();
 }
 
 void MainWindow::onLoadFromFileButtonClicked()
 {
+	ASSERT(!m_rowProvider->isGeneratingProcess());
+
 	const QString path = QFileDialog::getOpenFileName(this, tr("Open File"), qApp->applicationDirPath(), QString("*.xml"));
 
 	if (path.isEmpty())
 	{
 		return;
 	}
+
+	tableView->setEnabled(false);
+
+	m_future = std::async(std::launch::async, SerializationTask(m_rowsCollection, path));
+
+	m_saveLoadFileTimer->start();
 }
 
 void MainWindow::onGeneratingDone()
 {
+	saveToFileButton->setEnabled(true);
+	loadFromFileButton->setEnabled(true);
+
 	generateRowsButton->setText(tr("Generate"));
 }
 
 void MainWindow::onRowDataReady(const RowData& row)
 {
-	QList<QStandardItem*> rowItems;
+	m_rowsCollection->addRow(row);
+}
 
-	rowItems.push_back(new QStandardItem(QString(row.string)));
-	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.number)));
-	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.floatingPointNumber, 0, 'g', 3)));
-	rowItems.push_back(new QStandardItem(QString::fromUtf8("%1").arg(row.boolValue ? "true" : "false")));
+void MainWindow::checkSaveLoadOperationReady()
+{
+	ASSERT(m_future.valid());
 
-	m_itemModel->appendRow(rowItems);
+	const std::future_status status = m_future.wait_for(std::chrono::milliseconds(0));
+
+	if (status == std::future_status::timeout)
+	{
+		return;
+	}
+
+	if (status == std::future_status::ready)
+	{
+		m_future.get();
+
+		tableView->setEnabled(true);
+
+		m_saveLoadFileTimer->stop();
+	}
 }
 
 }
