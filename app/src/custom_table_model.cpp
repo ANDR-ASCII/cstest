@@ -39,7 +39,7 @@ Qt::ItemFlags CustomTableModel::flags(const QModelIndex& index) const
 
 void CustomTableModel::onRowAdded()
 {
-	const int rowIndex = m_collection->rowCount();
+	const int rowIndex = m_collection->rowCount() - 1;
 
 	beginInsertRows(QModelIndex(), rowIndex, rowIndex);
 	endInsertRows();

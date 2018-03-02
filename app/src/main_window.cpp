@@ -1,6 +1,6 @@
 #include "main_window.h"
 #include "row_provider.h"
-#include "serialization_task.h"
+#include "tasks.h"
 #include "helpers.h"
 #include "rows_collection.h"
 #include "custom_table_model.h"
@@ -60,6 +60,7 @@ void MainWindow::onGenerateRowsButtonClicked()
 
 void MainWindow::onSaveToFileButtonClicked()
 {
+	ASSERT(!m_saveLoadFileTimer->isActive());
 	ASSERT(!m_rowProvider->isGeneratingProcess());
 
 	const QString path = QFileDialog::getSaveFileName(this, tr("Save File"), qApp->applicationDirPath(), QString("*.xml"));
@@ -78,6 +79,7 @@ void MainWindow::onSaveToFileButtonClicked()
 
 void MainWindow::onLoadFromFileButtonClicked()
 {
+	ASSERT(!m_saveLoadFileTimer->isActive());
 	ASSERT(!m_rowProvider->isGeneratingProcess());
 
 	const QString path = QFileDialog::getOpenFileName(this, tr("Open File"), qApp->applicationDirPath(), QString("*.xml"));
@@ -87,9 +89,11 @@ void MainWindow::onLoadFromFileButtonClicked()
 		return;
 	}
 
+	m_rowsCollection->clear();
+
 	tableView->setEnabled(false);
 
-	m_future = std::async(std::launch::async, SerializationTask(m_rowsCollection, path));
+	m_future = std::async(std::launch::async, DeserializationTask(m_rowsCollection, path));
 
 	m_saveLoadFileTimer->start();
 }
