@@ -23,6 +23,7 @@ private slots:
 	void onGeneratingDone();
 	void onRowDataReady(const RowData& row);
 	void checkSaveLoadOperationReady();
+	void onRowsCollectionChanged();
 
 private:
 	RowProvider* m_rowProvider;

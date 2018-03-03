@@ -25,13 +25,13 @@ public:
 	int rowCount() const noexcept;
 	int columnCount() const noexcept;
 
-	QVariant itemAt(int row, int column);
+	QVariant itemAt(int row, int column) const;
 
 	bool canWriteFromThisThread() const noexcept;
 	void setSerializationState(bool value) noexcept;
 
 signals:
-	void rowAdded();
+	void rowAdded(int index);
 	void allRowsRemoved();
 
 private:

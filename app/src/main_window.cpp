@@ -23,8 +23,16 @@ MainWindow::MainWindow(QWidget* parent)
 	VERIFY(connect(m_rowProvider, &RowProvider::generatingDone, this, &MainWindow::onGeneratingDone));
 	VERIFY(connect(m_saveLoadFileTimer, &QTimer::timeout, this, &MainWindow::checkSaveLoadOperationReady));
 
+	VERIFY(connect(m_rowsCollection.get(), &RowsCollection::allRowsRemoved, 
+		this, &MainWindow::onRowsCollectionChanged, Qt::QueuedConnection));
+
+	VERIFY(connect(m_rowsCollection.get(), SIGNAL(rowAdded(int)), 
+		this, SLOT(onRowsCollectionChanged()), Qt::QueuedConnection));
+
 	tableView->setModel(new CustomTableModel(m_rowsCollection));
 	m_saveLoadFileTimer->setInterval(Helpers::s_minimumRecommendedTimerResolution);
+
+	onRowsCollectionChanged();
 }
 
 void MainWindow::onGenerateRowsButtonClicked()
@@ -145,6 +153,11 @@ void MainWindow::checkSaveLoadOperationReady()
 
 		m_saveLoadFileTimer->stop();
 	}
+}
+
+void MainWindow::onRowsCollectionChanged()
+{
+	rowsCountLabel->setText(QString("%1").arg(m_rowsCollection->rowCount()));
 }
 
 }

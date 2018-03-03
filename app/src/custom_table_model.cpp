@@ -37,11 +37,9 @@ Qt::ItemFlags CustomTableModel::flags(const QModelIndex& index) const
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-void CustomTableModel::onRowAdded()
+void CustomTableModel::onRowAdded(int index)
 {
-	const int rowIndex = m_collection->rowCount() - 1;
-
-	beginInsertRows(QModelIndex(), rowIndex, rowIndex);
+	beginInsertRows(QModelIndex(), index, index);
 	endInsertRows();
 }
 

@@ -88,7 +88,7 @@ void RowsCollection::addRow(const RowData& rowData)
 	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
 	m_rows.push_back(row);
 
-	emit rowAdded();
+	emit rowAdded(m_rows.size() - 1);
 }
 
 void RowsCollection::clear()
@@ -110,7 +110,7 @@ int RowsCollection::columnCount() const noexcept
 	return StdArraySize<RowDataType>::value;
 }
 
-QVariant RowsCollection::itemAt(int row, int column)
+QVariant RowsCollection::itemAt(int row, int column) const
 {
 	ASSERT(column < columnCount());
 	ASSERT(row < rowCount());
