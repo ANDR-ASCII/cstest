@@ -13,7 +13,9 @@ public:
 	RowDetailsWidget(QWidget* parent = nullptr);
 	
 	void setCollection(const std::shared_ptr<RowsCollection>& collection);
-	Q_SLOT void showDetailsFor(const QModelIndex& index);
+	
+public slots:
+	void showDetailsFor(const QModelIndex& index);
 
 private:
 	std::shared_ptr<RowsCollection> m_collection;

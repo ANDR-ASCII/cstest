@@ -50,7 +50,13 @@ void RowDetailsWidget::showDetailsFor(const QModelIndex& index)
 
 	for (int i = 0; i < m_collection->columnCount(); ++i)
 	{
-		m_labels[i]->setText(qvariant_cast<QString>(m_collection->itemAt(index.row(), i)));
+		const QVariant item = m_collection->itemAt(index.row(), i);
+
+		const QString string = item.type() == QVariant::Double ?
+			QString::number(item.toDouble(), 'f', 3) :
+			qvariant_cast<QString>(item);
+
+		m_labels[i]->setText(string);
 	}
 }
 
