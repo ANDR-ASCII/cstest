@@ -21,45 +21,10 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="2" column="1">
-     <widget class="QWidget" name="widget" native="true">
-      <layout class="QGridLayout" name="gridLayout_3">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <item row="0" column="1">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Current row:</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>GroupBox</string>
+       <string>Rows</string>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
@@ -140,9 +105,26 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="1">
+     <widget class="Test::RowDetailsWidget" name="rowDetailsWidget" native="true">
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Test::RowDetailsWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">row_details_widget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

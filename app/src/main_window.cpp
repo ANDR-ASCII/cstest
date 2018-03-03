@@ -4,6 +4,7 @@
 #include "helpers.h"
 #include "rows_collection.h"
 #include "custom_table_model.h"
+#include "row_details_widget.h"
 
 namespace Test
 {
@@ -15,6 +16,8 @@ MainWindow::MainWindow(QWidget* parent)
 	, m_saveLoadFileTimer(new QTimer(this))
 {
 	setupUi(this);
+
+	rowDetailsWidget->setCollection(m_rowsCollection);
 
 	VERIFY(connect(generateRowsButton, &QPushButton::clicked, this, &MainWindow::onGenerateRowsButtonClicked));
 	VERIFY(connect(saveToFileButton, &QPushButton::clicked, this, &MainWindow::onSaveToFileButtonClicked));
@@ -30,6 +33,10 @@ MainWindow::MainWindow(QWidget* parent)
 		this, SLOT(onRowsCollectionChanged()), Qt::QueuedConnection));
 
 	tableView->setModel(new CustomTableModel(m_rowsCollection));
+
+	VERIFY(connect(tableView->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)),
+		rowDetailsWidget, SLOT(showDetailsFor(const QModelIndex&))));
+
 	m_saveLoadFileTimer->setInterval(Helpers::s_minimumRecommendedTimerResolution);
 
 	onRowsCollectionChanged();
@@ -158,6 +165,11 @@ void MainWindow::checkSaveLoadOperationReady()
 void MainWindow::onRowsCollectionChanged()
 {
 	rowsCountLabel->setText(QString("%1").arg(m_rowsCollection->rowCount()));
+}
+
+void MainWindow::currentSelectedRowChanged(const QModelIndex& current, const QModelIndex&)
+{
+	rowDetailsWidget->showDetailsFor(current);
 }
 
 }

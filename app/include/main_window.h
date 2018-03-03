@@ -24,6 +24,7 @@ private slots:
 	void onRowDataReady(const RowData& row);
 	void checkSaveLoadOperationReady();
 	void onRowsCollectionChanged();
+	void currentSelectedRowChanged(const QModelIndex& current, const QModelIndex& previous);
 
 private:
 	RowProvider* m_rowProvider;

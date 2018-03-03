@@ -37,6 +37,7 @@
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QReadWriteLock>
+#include <QLabel>
 
 //
 // C/C++
