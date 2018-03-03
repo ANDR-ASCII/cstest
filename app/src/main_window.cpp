@@ -124,7 +124,22 @@ void MainWindow::checkSaveLoadOperationReady()
 
 	if (status == std::future_status::ready)
 	{
-		m_future.get();
+		try
+		{
+			m_future.get();
+		}
+		catch (const Test::BrokenDataResultOperation& exception)
+		{
+			QMessageBox::warning(this,
+				tr("Warning"),
+				exception.what(),
+				QMessageBox::Ok
+			);
+		}
+		catch (...)
+		{
+			ASSERT(!"Unhandled exception");
+		}
 
 		tableView->setEnabled(true);
 

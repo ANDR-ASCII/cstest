@@ -34,9 +34,14 @@ private:
 class WriteLockerGuard final
 {
 public:
-	WriteLockerGuard(QReadWriteLock& rwMutex)
+	WriteLockerGuard(QReadWriteLock& rwMutex, bool canWrite)
 		: m_rwMutex(rwMutex)
 	{
+		if (!canWrite)
+		{
+			throw Test::BrokenDataResultOperation("Attempt to change collection at serialization/deserialization state");
+		}
+
 		m_rwMutex.lockForWrite();
 	}
 
@@ -46,13 +51,25 @@ public:
 	}
 
 private:
-	QReadWriteLock & m_rwMutex;
+	QReadWriteLock& m_rwMutex;
 };
 
 }
 
 namespace Test
 {
+
+BrokenDataResultOperation::BrokenDataResultOperation(const char* what_arg)
+	: std::runtime_error(what_arg)
+{
+}
+
+BrokenDataResultOperation::BrokenDataResultOperation(const std::string& what_arg)
+	: std::runtime_error(what_arg)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 RowsCollection::RowsCollection(QObject* parent)
 	: QObject(parent)
@@ -68,7 +85,7 @@ void RowsCollection::addRow(const RowData& rowData)
 	row[2] = QVariant::fromValue(rowData.floatingPointNumber);
 	row[3] = QVariant::fromValue(rowData.boolValue);
 
-	WriteLockerGuard guard(m_rwMutex);
+	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
 	m_rows.push_back(row);
 
 	emit rowAdded();
@@ -76,7 +93,7 @@ void RowsCollection::addRow(const RowData& rowData)
 
 void RowsCollection::clear()
 {
-	WriteLockerGuard guard(m_rwMutex);
+	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
 	m_rows.clear();
 
 	emit allRowsRemoved();
@@ -100,6 +117,39 @@ QVariant RowsCollection::itemAt(int row, int column)
 
 	ReadLockerGuard guard(m_rwMutex);
 	return m_rows[row][column];
+}
+
+void RowsCollection::setSerializationState(bool value) noexcept
+{
+	m_serializationStateDescriptor.setSerializationState(value);
+}
+
+bool RowsCollection::canWriteFromThisThread() const noexcept
+{
+	return m_serializationStateDescriptor.canWriteFromThisThread();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+RowsCollection::SerializationStateDescriptor::SerializationStateDescriptor()
+	: m_serializationState(false)
+	, m_id(std::thread::id())
+{
+}
+
+void RowsCollection::SerializationStateDescriptor::setSerializationState(bool value) noexcept
+{
+	std::lock_guard<std::mutex> locker(m_mutex);
+
+	m_serializationState = value;
+	m_id = std::this_thread::get_id();
+}
+
+bool RowsCollection::SerializationStateDescriptor::canWriteFromThisThread() const noexcept
+{
+	std::lock_guard<std::mutex> locker(m_mutex);
+
+	return m_serializationState ? m_id == std::this_thread::get_id() : true;
 }
 
 }

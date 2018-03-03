@@ -27,6 +27,8 @@ SerializationTask::SerializationTask(const std::shared_ptr<RowsCollection>& coll
 
 void SerializationTask::operator()()
 {
+	m_collection->setSerializationState(true);
+
 	QFile fileDescriptor(m_filepath);
 
 	if (!fileDescriptor.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -44,6 +46,8 @@ void SerializationTask::operator()()
 
 	writer.writeEndElement();
 	writer.writeEndDocument();
+
+	m_collection->setSerializationState(false);
 }
 
 void SerializationTask::saveRows(QXmlStreamWriter& writer)
@@ -79,6 +83,8 @@ DeserializationTask::DeserializationTask(const std::shared_ptr<RowsCollection>& 
 
 void DeserializationTask::operator()()
 {
+	m_collection->setSerializationState(true);
+
 	QFile fileDescriptor(m_filepath);
 
 	if (!fileDescriptor.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -102,6 +108,8 @@ void DeserializationTask::operator()()
 			readRows(reader);
 		}
 	}
+
+	m_collection->setSerializationState(false);
 }
 
 void DeserializationTask::readRows(QXmlStreamReader& reader)
