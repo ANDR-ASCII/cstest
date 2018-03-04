@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget* parent)
 	VERIFY(connect(generateRowsButton, &QPushButton::clicked, this, &MainWindow::onGenerateRowsButtonClicked));
 	VERIFY(connect(saveToFileButton, &QPushButton::clicked, this, &MainWindow::onSaveToFileButtonClicked));
 	VERIFY(connect(loadFromFileButton, &QPushButton::clicked, this, &MainWindow::onLoadFromFileButtonClicked));
-	VERIFY(connect(m_rowProvider, &RowProvider::rowReady, this, &MainWindow::onRowDataReady));
+	VERIFY(connect(m_rowProvider, &RowProvider::rowsPackReady, this, &MainWindow::onRowsPackReady));
 	VERIFY(connect(m_rowProvider, &RowProvider::generatingDone, this, &MainWindow::onGeneratingDone));
 	VERIFY(connect(m_saveLoadFileTimer, &QTimer::timeout, this, &MainWindow::checkSaveLoadOperationReady));
 
@@ -113,9 +113,9 @@ void MainWindow::onGeneratingDone()
 	generateRowsButton->setText(tr("Generate"));
 }
 
-void MainWindow::onRowDataReady(const RowData& row)
+void MainWindow::onRowsPackReady(const QVector<RowData>& rows)
 {
-	m_rowsCollection->addRow(row);
+	m_rowsCollection->addRows(rows);
 }
 
 void MainWindow::checkSaveLoadOperationReady()

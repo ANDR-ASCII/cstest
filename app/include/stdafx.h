@@ -38,6 +38,8 @@
 #include <QXmlStreamReader>
 #include <QReadWriteLock>
 #include <QLabel>
+#include <QPointer>
+#include <QtGlobal>
 
 //
 // C/C++

@@ -14,12 +14,16 @@ struct RowData
 	bool boolValue;
 };
 
+Q_DECLARE_METATYPE(RowData)
+
 class RowGenerator final
 {
 public:
 	void generateRows(std::size_t count);
 	bool extractRowData(RowData& row);
 	void stopGenerating();
+	void wait() const noexcept;
+	std::size_t size() const noexcept;
 
 private:
 	//

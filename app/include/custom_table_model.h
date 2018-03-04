@@ -18,8 +18,7 @@ public:
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 private slots:
-	void onRowAdded(int index);
-	void onAboutAllDataRemoved();
+	void onAboutCollectionChanged();
 
 private:
 	std::shared_ptr<RowsCollection> m_collection;

@@ -43,11 +43,8 @@ void RowDetailsWidget::setCollection(const std::shared_ptr<RowsCollection>& coll
 
 	onRowsCountChanged();
 
-	VERIFY(connect(m_collection.get(), &RowsCollection::allRowsRemoved,
+	VERIFY(connect(m_collection.get(), &RowsCollection::collectionChanged,
 		this, &RowDetailsWidget::onRowsCountChanged, Qt::QueuedConnection));
-
-	VERIFY(connect(m_collection.get(), SIGNAL(rowAdded(int)),
-		this, SLOT(onRowsCountChanged()), Qt::QueuedConnection));
 }
 
 void RowDetailsWidget::showDetailsFor(const QModelIndex& index)

@@ -8,8 +8,7 @@ CustomTableModel::CustomTableModel(const std::shared_ptr<RowsCollection>& collec
 	: QAbstractTableModel(parent)
 	, m_collection(collection)
 {
-	VERIFY(connect(m_collection.get(), &RowsCollection::rowAdded, this, &CustomTableModel::onRowAdded, Qt::QueuedConnection));
-	VERIFY(connect(m_collection.get(), &RowsCollection::allRowsRemoved, this, &CustomTableModel::onAboutAllDataRemoved, Qt::QueuedConnection));
+	VERIFY(connect(m_collection.get(), &RowsCollection::collectionChanged, this, &CustomTableModel::onAboutCollectionChanged, Qt::QueuedConnection));
 }
 
 int CustomTableModel::columnCount(const QModelIndex&) const
@@ -37,13 +36,7 @@ Qt::ItemFlags CustomTableModel::flags(const QModelIndex& index) const
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-void CustomTableModel::onRowAdded(int index)
-{
-	beginInsertRows(QModelIndex(), index, index);
-	endInsertRows();
-}
-
-void CustomTableModel::onAboutAllDataRemoved()
+void CustomTableModel::onAboutCollectionChanged()
 {
 	beginResetModel();
 	endResetModel();

@@ -1,5 +1,6 @@
 #include "row_provider.h"
 #include "helpers.h"
+#include "row_data_extractor.h"
 
 namespace Test
 {
@@ -10,64 +11,56 @@ RowProvider::RowProvider(QObject* parent)
 	, m_generatedRowsCounter(0)
 	, m_dispatchTimerId(0)
 	, m_isGeneratingProcess(false)
+	, m_extractorThread(new QThread)
 {
+	m_extractorThread->start();
+}
+
+RowProvider::~RowProvider()
+{
+	stopGenerating();
+
+	m_extractorThread->exit();
+	m_extractorThread->wait();
+	m_rowGenerator->wait();
 }
 
 void RowProvider::generateRows(std::size_t count)
 {
-	ASSERT(count);
+	ASSERT(!m_isGeneratingProcess);
 
-	m_generatedRowsCounter = count;
+	m_extractor = new RowDataExtractor(m_rowGenerator.get(), count);
+	m_extractor->moveToThread(m_extractorThread);
 
-	m_dispatchTimerId = startTimer(Helpers::s_minimumRecommendedTimerResolution);
-	ASSERT(m_dispatchTimerId);
+	VERIFY(connect(m_extractor, &RowDataExtractor::rowsPackReady, this, &RowProvider::rowsPackReady, Qt::QueuedConnection));
+	VERIFY(connect(m_extractor, &RowDataExtractor::done, this, &RowProvider::onExtractionDone, Qt::QueuedConnection));
 
 	m_rowGenerator->generateRows(count);
 
 	m_isGeneratingProcess = true;
+
+	VERIFY(QMetaObject::invokeMethod(m_extractor, "startExtraction", Qt::QueuedConnection));
 }
 
 void RowProvider::stopGenerating()
 {
-	if (m_dispatchTimerId)
+	if (!m_extractor)
 	{
-		m_rowGenerator->stopGenerating();
-
-		killTimer(m_dispatchTimerId);
-
-		m_isGeneratingProcess = false;
-
-		emit generatingDone();
+		return;
 	}
+
+	m_rowGenerator->stopGenerating();
+	m_extractor->interrupt();
+	onExtractionDone();
 }
 
-void RowProvider::timerEvent(QTimerEvent* event)
+void RowProvider::onExtractionDone()
 {
-	checkRowsReady();
+	m_extractor->deleteLater();
 
-	QObject::timerEvent(event);
-}
+	m_isGeneratingProcess = false;
 
-void RowProvider::checkRowsReady()
-{
-	RowData row;
-
-	if (m_rowGenerator->extractRowData(row))
-	{
-		emit rowReady(row);
-
-		--m_generatedRowsCounter;
-	}
-
-	if (!m_generatedRowsCounter)
-	{
-		ASSERT(m_dispatchTimerId);
-		killTimer(m_dispatchTimerId);
-
-		m_isGeneratingProcess = false;
-
-		emit generatingDone();
-	}
+	emit generatingDone();
 }
 
 bool RowProvider::isGeneratingProcess() const noexcept

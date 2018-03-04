@@ -47,4 +47,14 @@ void RowGenerator::stopGenerating()
 	m_queue.clear();
 }
 
+void RowGenerator::wait() const noexcept
+{
+	m_threadPool.wait();
+}
+
+std::size_t RowGenerator::size() const noexcept
+{
+	return m_queue.size();
+}
+
 }

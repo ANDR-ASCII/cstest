@@ -20,6 +20,7 @@ public:
 	RowsCollection(QObject* parent = nullptr);
 
 	void addRow(const RowData& rowData);
+	void addRows(const QVector<RowData>& rowsData);
 	void clear();
 
 	int rowCount() const noexcept;
@@ -31,8 +32,7 @@ public:
 	void setSerializationState(bool value) noexcept;
 
 signals:
-	void rowAdded(int index);
-	void allRowsRemoved();
+	void collectionChanged();
 
 private:
 	using RowDataType = std::array<QVariant, 4>;

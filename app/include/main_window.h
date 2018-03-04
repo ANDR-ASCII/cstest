@@ -21,7 +21,7 @@ private slots:
 	void onSaveToFileButtonClicked();
 	void onLoadFromFileButtonClicked();
 	void onGeneratingDone();
-	void onRowDataReady(const RowData& row);
+	void onRowsPackReady(const QVector<RowData>& rows);
 	void checkSaveLoadOperationReady();
 	void currentSelectedRowChanged(const QModelIndex& current, const QModelIndex& previous);
 

@@ -88,7 +88,30 @@ void RowsCollection::addRow(const RowData& rowData)
 	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
 	m_rows.push_back(row);
 
-	emit rowAdded(m_rows.size() - 1);
+	emit collectionChanged();
+}
+
+void RowsCollection::addRows(const QVector<RowData>& rowsData)
+{
+	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
+
+	const int oldSize = m_rows.size();
+	const int packSize = rowsData.size();
+
+	m_rows.reserve(oldSize + packSize);
+
+	foreach(const RowData& rowData, rowsData)
+	{
+		RowDataType row;
+
+		row[0] = QVariant::fromValue(QString(rowData.string));
+		row[1] = QVariant::fromValue(rowData.number);
+		row[2] = QVariant::fromValue(rowData.floatingPointNumber);
+		row[3] = QVariant::fromValue(rowData.boolValue);
+		m_rows.push_back(row);
+	}
+
+	emit collectionChanged();
 }
 
 void RowsCollection::clear()
@@ -96,7 +119,7 @@ void RowsCollection::clear()
 	WriteLockerGuard guard(m_rwMutex, canWriteFromThisThread());
 	m_rows.clear();
 
-	emit allRowsRemoved();
+	emit collectionChanged();
 }
 
 int RowsCollection::rowCount() const noexcept

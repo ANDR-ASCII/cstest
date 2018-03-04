@@ -37,11 +37,18 @@ public:
 		return true;
 	}
 
-	bool empty()
+	bool empty() const noexcept
 	{
 		std::lock_guard<std::mutex> locker(m_mutex);
 
 		return m_queue.empty();
+	}
+
+	std::size_t size() const noexcept
+	{
+		std::lock_guard<std::mutex> locker(m_mutex);
+
+		return m_queue.size();
 	}
 
 	void clear()
