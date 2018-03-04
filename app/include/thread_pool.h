@@ -86,7 +86,6 @@ public:
 	ThreadPool()
 		: m_done(false)
 		, m_joiner(m_threads)
-		, m_runningTasksCount(0)
 	{
 		try
 		{
@@ -104,21 +103,11 @@ public:
 
 	void clearTasks()
 	{
-		std::lock_guard<std::mutex> locker(m_mutex);
 		m_queue.clear();
-	}
-
-	void wait() const
-	{
-		while (pendingTasksCount() != 0 && m_runningTasksCount != 0)
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		}
 	}
 
 	std::size_t pendingTasksCount() const
 	{
-		std::lock_guard<std::mutex> locker(m_mutex);
 		return m_queue.size();
 	}
 
@@ -132,8 +121,7 @@ public:
 	template <typename F>
 	void pushDetachedTask(F&& f)
 	{
-		std::lock_guard<std::mutex> locker(m_mutex);
-		m_queue.push_back(TaskWrapper(std::move(f)));
+		m_queue.push(TaskWrapper(std::move(f)));
 
 		m_wakeupThreadCondition.notify_all();
 	}
@@ -146,39 +134,32 @@ public:
 		std::packaged_task<ReturnType()> packagedTask(f);
 		std::future<ReturnType> future(packagedTask.get_future());
 
-		std::lock_guard<std::mutex> locker(m_mutex);
-		m_queue.push_back(TaskWrapper(std::move(packagedTask)));
+		m_queue.push(TaskWrapper(std::move(packagedTask)));
 
 		m_wakeupThreadCondition.notify_all();
 
 		return future;
 	}
 
-// 	void executePendingTask()
-// 	{
-// 		TaskWrapper task;
-// 
-// 		if (m_queue.pop(task))
-// 		{
-// 			++m_runningTasksCount;
-// 
-// 			task();
-// 
-// 			--m_runningTasksCount;
-// 		}
-// 		else
-// 		{
-// 			std::this_thread::yield();
-// 		}
-// 	}
+	void executePendingTask()
+	{
+		TaskWrapper task;
+
+		if (m_queue.pop(task))
+		{
+			task();
+		}
+		else
+		{
+			std::this_thread::yield();
+		}
+	}
 
 private:
 	void workerThreadEntryPoint()
 	{
 		while (!m_done)
 		{
-			TaskWrapper task;
-
 			{
 				std::unique_lock<std::mutex> locker(m_mutex);
 				m_wakeupThreadCondition.wait(locker, [this] { return !m_queue.empty() || m_done; });
@@ -187,29 +168,19 @@ private:
 				{
 					return;
 				}
-
-				task = std::move(m_queue.front());
-				m_queue.pop_front();
-				++m_runningTasksCount;
 			}
 
-			task();
-
-			--m_runningTasksCount;
-
-			std::this_thread::yield();
+			executePendingTask();
 		}
 	}
 
 private:
 	std::atomic_bool m_done;
-	std::deque<TaskWrapper> m_queue;
-	//ThreadSafeQueue<TaskWrapper> m_queue;
+	ThreadSafeQueue<TaskWrapper> m_queue;
 	mutable std::mutex m_mutex;
 	std::condition_variable m_wakeupThreadCondition;
 	std::vector<std::thread> m_threads;
 	Joiner m_joiner;
-	std::atomic<std::size_t> m_runningTasksCount;
 };
 
 }

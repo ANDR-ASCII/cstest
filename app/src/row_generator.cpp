@@ -47,11 +47,6 @@ void RowGenerator::stopGenerating()
 	m_queue.clear();
 }
 
-void RowGenerator::wait() const noexcept
-{
-	m_threadPool.wait();
-}
-
 std::size_t RowGenerator::size() const noexcept
 {
 	return m_queue.size();
@@ -60,6 +55,11 @@ std::size_t RowGenerator::size() const noexcept
 bool RowGenerator::extractAllRowsData(QVector<RowData>& rows)
 {
 	return m_queue.popAll(rows);
+}
+
+bool RowGenerator::extractRowsDataMax(QVector<RowData>& rows, std::size_t max)
+{
+	return m_queue.popMax(rows, max);
 }
 
 }

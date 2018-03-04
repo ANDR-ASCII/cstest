@@ -59,6 +59,31 @@ public:
 		return true;
 	}
 
+	bool popMax(QVector<T>& container, std::size_t max)
+	{
+		std::lock_guard<std::mutex> locker(m_mutex);
+
+		if (m_queue.empty())
+		{
+			return false;
+		}
+
+		const std::size_t queueSize = m_queue.size();
+		const std::size_t mustExtractedCount = qMin(max, queueSize);
+
+		container.reserve(static_cast<int>(queueSize));
+
+		std::copy(
+			std::make_move_iterator(m_queue.begin()),
+			std::make_move_iterator(m_queue.begin()) + mustExtractedCount,
+			std::back_inserter(container)
+		);
+
+		m_queue.erase(m_queue.begin(), m_queue.begin() + mustExtractedCount);
+
+		return true;
+	}
+
 	bool empty() const noexcept
 	{
 		std::lock_guard<std::mutex> locker(m_mutex);

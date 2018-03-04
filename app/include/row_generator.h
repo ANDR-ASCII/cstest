@@ -22,8 +22,8 @@ public:
 	void generateRows(std::size_t count);
 	bool extractRowData(RowData& row);
 	bool extractAllRowsData(QVector<RowData>& rows);
+	bool extractRowsDataMax(QVector<RowData>& rows, std::size_t max);
 	void stopGenerating();
-	void wait() const noexcept;
 	std::size_t size() const noexcept;
 
 private:

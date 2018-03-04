@@ -1,6 +1,14 @@
 #include "row_provider.h"
 #include "helpers.h"
 
+namespace
+{
+
+constexpr int s_updateTimerTime = 100;
+constexpr int s_maximumExtractionCount = 100000;
+
+}
+
 namespace Test
 {
 
@@ -19,7 +27,7 @@ void RowProvider::generateRows(std::size_t count)
 
 	m_generatedRowsCounter = count;
 
-	m_dispatchTimerId = startTimer(100);
+	m_dispatchTimerId = startTimer(s_updateTimerTime);
 	ASSERT(m_dispatchTimerId);
 
 	m_rowGenerator->generateRows(count);
@@ -52,7 +60,7 @@ void RowProvider::checkRowsReady()
 {
 	QVector<RowData> rows;
 
-	if (m_rowGenerator->extractAllRowsData(rows))
+	if (m_rowGenerator->extractRowsDataMax(rows, s_maximumExtractionCount))
 	{
 		emit rowsPackReady(rows);
 
@@ -69,7 +77,6 @@ void RowProvider::checkRowsReady()
 		emit generatingDone();
 	}
 }
-
 
 bool RowProvider::isGeneratingProcess() const noexcept
 {
