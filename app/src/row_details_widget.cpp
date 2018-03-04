@@ -6,34 +6,32 @@ namespace Test
 
 RowDetailsWidget::RowDetailsWidget(QWidget* parent)
 	: QWidget(parent)
+	, m_rowsCountLabel(new QLabel(this))
 {
-	QVBoxLayout* thisLayout = new QVBoxLayout(this);
-	thisLayout->setMargin(0);
-
-	QHBoxLayout* stubLayout = new QHBoxLayout;
-	QLabel* stub = new QLabel(QString("Current row:"), this);
-
-	stubLayout->addWidget(stub);
-
 	QFont font;
 	font.setBold(true);
 	font.setWeight(75);
 
-	stub->setFont(font);
+	QGridLayout* gridLayout = new QGridLayout(this);
+	gridLayout->setMargin(0);
 
-	thisLayout->addLayout(stubLayout);
+	QLabel* rowsCountLabelStub = new QLabel("Rows count: ");
+	rowsCountLabelStub->setFont(font);
+
+	QLabel* currentRowLabel = new QLabel(QString("Current row:"), this);
+	currentRowLabel->setFont(font);
+
+	gridLayout->addWidget(rowsCountLabelStub, 0, 0);
+	gridLayout->addWidget(m_rowsCountLabel, 0, 1);
+	gridLayout->addWidget(currentRowLabel, 1, 0);
 
 	for (int i = 0; i < m_collection->columnCount(); ++i)
 	{
-		QHBoxLayout* layout = new QHBoxLayout;
 		QLabel* columnNameLabel = new QLabel(QString("Column %1:").arg(i + 1), this);
-		QLabel* valueLabel = new QLabel(QString("select a row"), this);
+		QLabel* valueLabel = new QLabel("select a row", this);
 
-		columnNameLabel->setFont(font);
-
-		layout->addWidget(columnNameLabel);
-		layout->addWidget(valueLabel);
-		thisLayout->addLayout(layout);
+		gridLayout->addWidget(columnNameLabel, i + 2, 0);
+		gridLayout->addWidget(valueLabel, i + 2, 1);
 
 		m_labels.push_back(valueLabel);
 	}
@@ -42,6 +40,14 @@ RowDetailsWidget::RowDetailsWidget(QWidget* parent)
 void RowDetailsWidget::setCollection(const std::shared_ptr<RowsCollection>& collection)
 {
 	m_collection = collection;
+
+	onRowsCountChanged();
+
+	VERIFY(connect(m_collection.get(), &RowsCollection::allRowsRemoved,
+		this, &RowDetailsWidget::onRowsCountChanged, Qt::QueuedConnection));
+
+	VERIFY(connect(m_collection.get(), SIGNAL(rowAdded(int)),
+		this, SLOT(onRowsCountChanged()), Qt::QueuedConnection));
 }
 
 void RowDetailsWidget::showDetailsFor(const QModelIndex& index)
@@ -58,6 +64,11 @@ void RowDetailsWidget::showDetailsFor(const QModelIndex& index)
 
 		m_labels[i]->setText(string);
 	}
+}
+
+void RowDetailsWidget::onRowsCountChanged()
+{
+	m_rowsCountLabel->setText(QString::number(m_collection->rowCount()));
 }
 
 }

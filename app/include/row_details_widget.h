@@ -17,9 +17,13 @@ public:
 public slots:
 	void showDetailsFor(const QModelIndex& index);
 
+private slots:
+	void onRowsCountChanged();
+
 private:
 	std::shared_ptr<RowsCollection> m_collection;
 	std::vector<QLabel*> m_labels;
+	QLabel* m_rowsCountLabel;
 };
 
 }
