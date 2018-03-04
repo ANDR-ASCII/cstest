@@ -57,4 +57,9 @@ std::size_t RowGenerator::size() const noexcept
 	return m_queue.size();
 }
 
+bool RowGenerator::extractAllRowsData(QVector<RowData>& rows)
+{
+	return m_queue.popAll(rows);
+}
+
 }

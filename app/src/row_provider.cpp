@@ -1,6 +1,5 @@
 #include "row_provider.h"
 #include "helpers.h"
-#include "row_data_extractor.h"
 
 namespace Test
 {
@@ -11,57 +10,66 @@ RowProvider::RowProvider(QObject* parent)
 	, m_generatedRowsCounter(0)
 	, m_dispatchTimerId(0)
 	, m_isGeneratingProcess(false)
-	, m_extractorThread(new QThread)
 {
-	m_extractorThread->start();
-}
-
-RowProvider::~RowProvider()
-{
-	stopGenerating();
-
-	m_extractorThread->exit();
-	m_extractorThread->wait();
-	m_rowGenerator->wait();
 }
 
 void RowProvider::generateRows(std::size_t count)
 {
-	ASSERT(!m_isGeneratingProcess);
+	ASSERT(count);
 
-	m_extractor = new RowDataExtractor(m_rowGenerator.get(), count);
-	m_extractor->moveToThread(m_extractorThread);
+	m_generatedRowsCounter = count;
 
-	VERIFY(connect(m_extractor, &RowDataExtractor::rowsPackReady, this, &RowProvider::rowsPackReady, Qt::QueuedConnection));
-	VERIFY(connect(m_extractor, &RowDataExtractor::done, this, &RowProvider::onExtractionDone, Qt::QueuedConnection));
+	m_dispatchTimerId = startTimer(100);
+	ASSERT(m_dispatchTimerId);
 
 	m_rowGenerator->generateRows(count);
 
 	m_isGeneratingProcess = true;
-
-	VERIFY(QMetaObject::invokeMethod(m_extractor, "startExtraction", Qt::QueuedConnection));
 }
 
 void RowProvider::stopGenerating()
 {
-	if (!m_extractor)
+	if (m_dispatchTimerId)
 	{
-		return;
+		m_rowGenerator->stopGenerating();
+
+		killTimer(m_dispatchTimerId);
+
+		m_isGeneratingProcess = false;
+
+		emit generatingDone();
+	}
+}
+
+void RowProvider::timerEvent(QTimerEvent* event)
+{
+	checkRowsReady();
+
+	QObject::timerEvent(event);
+}
+
+void RowProvider::checkRowsReady()
+{
+	QVector<RowData> rows;
+
+	if (m_rowGenerator->extractAllRowsData(rows))
+	{
+		emit rowsPackReady(rows);
+
+		m_generatedRowsCounter -= rows.size();
 	}
 
-	m_rowGenerator->stopGenerating();
-	m_extractor->interrupt();
-	onExtractionDone();
+	if (!m_generatedRowsCounter)
+	{
+		ASSERT(m_dispatchTimerId);
+		killTimer(m_dispatchTimerId);
+
+		m_isGeneratingProcess = false;
+
+		emit generatingDone();
+	}
 }
 
-void RowProvider::onExtractionDone()
-{
-	m_extractor->deleteLater();
-
-	m_isGeneratingProcess = false;
-
-	emit generatingDone();
-}
 
 bool RowProvider::isGeneratingProcess() const noexcept
 {

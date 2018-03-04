@@ -21,6 +21,7 @@ class RowGenerator final
 public:
 	void generateRows(std::size_t count);
 	bool extractRowData(RowData& row);
+	bool extractAllRowsData(QVector<RowData>& rows);
 	void stopGenerating();
 	void wait() const noexcept;
 	std::size_t size() const noexcept;

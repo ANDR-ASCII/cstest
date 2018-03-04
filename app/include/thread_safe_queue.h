@@ -37,6 +37,28 @@ public:
 		return true;
 	}
 
+	bool popAll(QVector<T>& container)
+	{
+		std::lock_guard<std::mutex> locker(m_mutex);
+
+		if (m_queue.empty())
+		{
+			return false;
+		}
+
+		container.reserve(static_cast<int>(m_queue.size()));
+
+		std::copy(
+			std::make_move_iterator(m_queue.begin()),
+			std::make_move_iterator(m_queue.end()),
+			std::back_inserter(container)
+		);
+
+		m_queue.clear();
+
+		return true;
+	}
+
 	bool empty() const noexcept
 	{
 		std::lock_guard<std::mutex> locker(m_mutex);
