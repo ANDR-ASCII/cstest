@@ -78,6 +78,9 @@ void MainWindow::onSaveToFileButtonClicked()
 	}
 
 	tableView->setEnabled(false);
+	saveToFileButton->setEnabled(false);
+	loadFromFileButton->setEnabled(false);
+	generateRowsButton->setEnabled(false);
 
 	m_future = std::async(std::launch::async, SerializationTask(m_rowsCollection, path));
 
@@ -99,6 +102,9 @@ void MainWindow::onLoadFromFileButtonClicked()
 	m_rowsCollection->clear();
 
 	tableView->setEnabled(false);
+	saveToFileButton->setEnabled(false);
+	loadFromFileButton->setEnabled(false);
+	generateRowsButton->setEnabled(false);
 
 	m_future = std::async(std::launch::async, DeserializationTask(m_rowsCollection, path));
 
@@ -149,6 +155,9 @@ void MainWindow::checkSaveLoadOperationReady()
 		}
 
 		tableView->setEnabled(true);
+		saveToFileButton->setEnabled(true);
+		loadFromFileButton->setEnabled(true);
+		generateRowsButton->setEnabled(true);
 
 		m_saveLoadFileTimer->stop();
 	}
